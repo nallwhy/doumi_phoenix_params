@@ -31,7 +31,7 @@ defmodule Doumi.Phoenix.Params.MixProject do
 
   defp package() do
     [
-      description: "A helper library that handles form with Phoenix.Component.",
+      description: "A helper library that supports converting form to params and params to form",
       licenses: ["MIT"],
       maintainers: ["Jinkyou Son(nallwhy@gmail.com)"],
       files: ~w(lib mix.exs README.md LICENSE.md),

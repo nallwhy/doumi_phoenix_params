@@ -7,7 +7,7 @@
 
 <!-- MDOC !-->
 
-`Doumi.Phoenix.Params` is a helper library that convert form to params and params to form.
+`Doumi.Phoenix.Params` is a helper library that supports converting form to params and params to form.
 
 **도우미(Doumi)** means "helper" in Korean.
 
