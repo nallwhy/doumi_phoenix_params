@@ -10,7 +10,8 @@ defmodule Doumi.Phoenix.Params.MixProject do
       version: @version,
       elixir: "~> 1.12",
       deps: deps(),
-      package: package()
+      package: package(),
+      docs: docs()
     ]
   end
 
@@ -25,7 +26,8 @@ defmodule Doumi.Phoenix.Params.MixProject do
   defp deps do
     [
       {:phoenix_live_view, ">= 0.18.12"},
-      {:phoenix_ecto, ">= 4.0.0"}
+      {:phoenix_ecto, ">= 4.0.0"},
+      {:ex_doc, "~> 0.29", only: :docs}
     ]
   end
 
@@ -38,6 +40,19 @@ defmodule Doumi.Phoenix.Params.MixProject do
       links: %{
         "GitHub" => @source_url
       }
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_ref: "v#{@version}",
+      source_url: @source_url,
+      extras: [
+        "README.md": [title: "Overview"],
+        "LICENSE.md": [title: "License"]
+      ],
+      api_reference: false
     ]
   end
 end
