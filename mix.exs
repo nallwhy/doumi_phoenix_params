@@ -1,13 +1,16 @@
 defmodule Doumi.Phoenix.Params.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/nallwhy/doumi_phoenix_params"
+  @version "0.1.0"
+
   def project do
     [
       app: :doumi_phoenix_params,
-      version: "0.1.0",
-      elixir: "~> 1.14",
-      start_permanent: Mix.env() == :prod,
-      deps: deps()
+      version: @version,
+      elixir: "~> 1.12",
+      deps: deps(),
+      package: package()
     ]
   end
 
@@ -23,6 +26,18 @@ defmodule Doumi.Phoenix.Params.MixProject do
     [
       {:phoenix_live_view, ">= 0.18.12"},
       {:phoenix_ecto, ">= 4.0.0"}
+    ]
+  end
+
+  defp package() do
+    [
+      description: "A helper library that handles form with Phoenix.Component.",
+      licenses: ["MIT"],
+      maintainers: ["Jinkyou Son(nallwhy@gmail.com)"],
+      files: ~w(lib mix.exs README.md LICENSE.md),
+      links: %{
+        "GitHub" => @source_url
+      }
     ]
   end
 end
