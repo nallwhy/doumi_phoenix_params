@@ -7,20 +7,16 @@ defmodule Doumi.Phoenix.Params do
 
   def to_params(%Ecto.Changeset{} = changeset, more_params) do
     changeset.params
+    |> keys_to_string()
     |> Map.merge(more_params)
   end
 
-  def to_form(params, module_or_changeset_fun, opts \\ [])
-
-  def to_form(params, module, opts) when is_atom(module) do
-    to_form(params, &module.changeset/1, opts)
-  end
-
-  def to_form(params, changeset_fun, opts) when is_function(changeset_fun, 1) do
+  def to_form(%module{} = struct, params, opts \\ []) when is_struct(struct) and is_map(params) do
     {validate, opts} = opts |> Keyword.pop(:validate, true)
+    {changeset_fun, opts} = opts |> Keyword.pop(:with, &module.changeset/2)
 
-    params
-    |> changeset_fun.()
+    struct
+    |> changeset_fun.(params)
     |> do_validate(validate)
     |> Phoenix.Component.to_form(opts)
   end
@@ -32,5 +28,17 @@ defmodule Doumi.Phoenix.Params do
 
   defp do_validate(%Ecto.Changeset{} = changeset, false) do
     changeset
+  end
+
+  defp keys_to_string(%{} = atom_key_map) do
+    atom_key_map
+    |> Enum.map(fn {key, value} ->
+      {to_string(key), keys_to_string(value)}
+    end)
+    |> Map.new()
+  end
+
+  defp keys_to_string(value) do
+    value
   end
 end

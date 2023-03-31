@@ -6,78 +6,94 @@ defmodule Doumi.Phoenix.ParamsTest do
     use Ecto.Schema
     import Ecto.Changeset
 
+    @primary_key false
     embedded_schema do
-      field(:foo, :string)
+      field :foo, :string
+
+      embeds_one :embedded, Embedded, primary_key: false do
+        field :bar, :string
+      end
     end
 
-    def changeset(params) do
-      %__MODULE__{}
+    def changeset(%__MODULE__{} = struct \\ %__MODULE__{}, params) do
+      struct
       |> cast(params, [:foo])
       |> validate_required([:foo])
+      |> cast_embed(:embedded, required: true, with: &changeset_embedded/2)
+    end
+
+    def another_changeset(%__MODULE__{} = struct \\ %__MODULE__{}, params) do
+      struct
+      |> cast(params, [:foo])
+      |> validate_required([:foo])
+      |> append_foo_to_foo()
+    end
+
+    def changeset_embedded(%__MODULE__.Embedded{} = struct \\ %__MODULE__.Embedded{}, params) do
+      struct
+      |> cast(params, [:bar])
+      |> validate_required([:bar])
+    end
+
+    defp append_foo_to_foo(%Ecto.Changeset{changes: changes, valid?: true} = changeset) do
+      changeset
+      |> put_change(:foo, changes.foo <> "foo")
     end
   end
 
   describe "to_params/2" do
-    test "returns params from changeset" do
-      changeset = Test.changeset(%{foo: "bar"})
-
-      assert Params.to_params(changeset) == %{"foo" => "bar"}
+    setup do
+      %{changeset: Test.changeset(%{foo: "foo", embedded: %{bar: "bar"}})}
     end
 
-    test "returns params from form" do
-      form = Test.changeset(%{foo: "bar"}) |> Phoenix.Component.to_form()
-
-      assert Params.to_params(form) == %{"foo" => "bar"}
+    test "returns params from changeset", %{changeset: changeset} do
+      assert Params.to_params(changeset) == %{"foo" => "foo", "embedded" => %{"bar" => "bar"}}
     end
 
-    test "returns params merged with more_params" do
-      changeset = Test.changeset(%{foo: "bar"})
+    test "returns params from form", %{changeset: changeset} do
+      form = changeset |> Phoenix.Component.to_form()
 
-      assert Params.to_params(changeset, %{"bar" => "baz"}) == %{"foo" => "bar", "bar" => "baz"}
+      assert Params.to_params(form) == %{"foo" => "foo", "embedded" => %{"bar" => "bar"}}
+    end
+
+    test "returns params merged with more_params", %{changeset: changeset} do
+      assert Params.to_params(changeset, %{"baz" => "baz"}) == %{
+               "foo" => "foo",
+               "embedded" => %{"bar" => "bar"},
+               "baz" => "baz"
+             }
     end
   end
 
   describe "to_form/3" do
-    test "returns form from params and changeset_fun" do
-      params = %{"foo" => "bar"}
-
-      assert %Phoenix.HTML.Form{source: %Ecto.Changeset{} = source} =
-               Params.to_form(params, &Test.changeset/1)
-
-      assert source.action == :validate
-      assert source.changes == %{foo: "bar"}
+    setup do
+      %{params: %{"foo" => "foo", "embedded" => %{"bar" => "bar"}}}
     end
 
-    test "returns form from params and module" do
-      params = %{"foo" => "bar"}
+    test "returns form from struct and params", %{params: params} do
+      assert %Phoenix.HTML.Form{source: %Ecto.Changeset{} = changeset} =
+               Params.to_form(%Test{}, params)
 
-      assert %Phoenix.HTML.Form{source: %Ecto.Changeset{} = source} = Params.to_form(params, Test)
-      assert source.action == :validate
-      assert source.changes == %{foo: "bar"}
+      assert changeset.action == :validate
+      assert %{foo: "foo", embedded: %Ecto.Changeset{} = embedded_changeset} = changeset.changes
+      assert %{bar: "bar"} = embedded_changeset.changes
     end
 
-    test "returns form from params and module with validate: false" do
-      params = %{"foo" => "bar"}
+    test "returns form from struct and params with with option", %{params: params} do
+      assert %Phoenix.HTML.Form{source: %Ecto.Changeset{} = changeset} =
+               Params.to_form(%Test{}, params, with: &Test.another_changeset/2)
 
-      assert %Phoenix.HTML.Form{source: %Ecto.Changeset{} = source} =
-               Params.to_form(params, Test, validate: false)
-
-      assert source.action == nil
-      assert source.changes == %{foo: "bar"}
+      assert changeset.action == :validate
+      assert %{foo: "foofoo"} = changeset.changes
     end
 
-    test "returns form from params and module with opts" do
-      params = %{"foo" => "bar"}
+    test "returns form from params and module with validate: false", %{params: params} do
+      assert %Phoenix.HTML.Form{source: %Ecto.Changeset{} = changeset} =
+               Params.to_form(%Test{}, params, validate: false)
 
-      assert %Phoenix.HTML.Form{source: %Ecto.Changeset{} = source} =
-               form = Params.to_form(params, Test, id: :test_id, name: :test_name, as: :test_as)
-
-      assert source.action == :validate
-      assert source.changes == %{foo: "bar"}
-      assert form.id == :test_id
-      assert form.name == "test_as"
-      assert form.options |> Keyword.get(:id) == :test_id
-      assert form.options |> Keyword.get(:name) == :test_name
+      assert changeset.action == nil
+      assert %{foo: "foo", embedded: %Ecto.Changeset{} = embedded_changeset} = changeset.changes
+      assert %{bar: "bar"} = embedded_changeset.changes
     end
   end
 end
