@@ -96,4 +96,20 @@ defmodule Doumi.Phoenix.ParamsTest do
       assert %{bar: "bar"} = embedded_changeset.changes
     end
   end
+
+  describe "to_map/1" do
+    setup do
+      %{changeset: Test.changeset(%{foo: "foo", embedded: %{bar: "bar"}})}
+    end
+
+    test "returns map from changeset", %{changeset: changeset} do
+      assert Params.to_map(changeset) == %{foo: "foo", embedded: %{bar: "bar"}}
+    end
+
+    test "returns map from form", %{changeset: changeset} do
+      form = changeset |> Phoenix.Component.to_form()
+
+      assert Params.to_map(form) == %{foo: "foo", embedded: %{bar: "bar"}}
+    end
+  end
 end

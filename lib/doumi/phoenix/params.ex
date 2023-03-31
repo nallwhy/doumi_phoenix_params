@@ -21,6 +21,16 @@ defmodule Doumi.Phoenix.Params do
     |> Phoenix.Component.to_form(opts)
   end
 
+  def to_map(%Phoenix.HTML.Form{source: %Ecto.Changeset{} = changeset}) do
+    to_map(changeset)
+  end
+
+  def to_map(%Ecto.Changeset{} = changeset) do
+    changeset
+    |> Ecto.Changeset.apply_changes()
+    |> struct_to_map()
+  end
+
   defp do_validate(%Ecto.Changeset{} = changeset, true) do
     changeset
     |> Map.put(:action, :validate)
@@ -28,6 +38,17 @@ defmodule Doumi.Phoenix.Params do
 
   defp do_validate(%Ecto.Changeset{} = changeset, false) do
     changeset
+  end
+
+  defp struct_to_map(%module{} = struct) when is_struct(struct) do
+    embeds = module.__schema__(:embeds)
+
+    map = struct |> Map.from_struct()
+
+    embeds
+    |> Enum.reduce(map, fn embed, acc ->
+      Map.update!(acc, embed, &struct_to_map(&1))
+    end)
   end
 
   defp keys_to_string(%{} = atom_key_map) do
