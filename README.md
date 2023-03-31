@@ -24,8 +24,8 @@ defmodule MyAppWeb.TestParams do
   end
 
   @required [:foo]
-  def changeset(attrs) do
-    %__MODULE__{}
+  def changeset(%__MODULE__{} = struct, attrs) do
+    struct
     |> cast(attrs, @required)
     |> validate_required(@required)
   end
@@ -41,10 +41,12 @@ defmodule MyAppWeb.MyLive do
   @impl true
   def mount(_params, _session, socket) do
     # Without Doumi.Phoenix.Params
-    # form = TestParams.changeset(%{}) |> to_form(as: :test)
+    # form =
+    #   TestParams.changeset(%TestParams{}, %{})
+    #   |> to_form(as: :test)
 
     # With Doumi.Phoenix.Params
-    form = %{} |> Params.to_form(TestParams, as: :test, validate: false)
+    form = Params.to_form(%TestParams{}, %{}, as: :test, validate: false)
 
     socket = socket |> assign(:form, form)
 
@@ -55,12 +57,12 @@ defmodule MyAppWeb.MyLive do
   def handle_event("validate", %{"test" => test_params}, socket) do
     # Without Doumi.Phoenix.Params
     # form =
-    #   TestParams.changeset(%{})
+    #   TestParams.changeset(%TestParams{}, test_params)
     #   |> to_form(as: :test)
     #   |> Map.put(:action, :validate)
 
     # With Doumi.Phoenix.Params
-    form = test_params |> Params.to_form(TestParams, as: :test)
+    form = Params.to_form(%TestParams{}, test_params, as: :test)
 
     socket = socket |> assign(:form, form)
 
@@ -70,22 +72,43 @@ defmodule MyAppWeb.MyLive do
   @impl true
   def handle_event("change_foo_from_outside_of_form", %{"foo" => foo}, socket) do
     # Without Doumi.Phoenix.Params
-    # form =
+    # test_params =
     #   socket.assigns.form.params
     #   |> Map.put(%{"foo" => foo})
-    #   |> TestParams.changeset()
+    #
+    # form =
+    #   TestParams.changeset(%TestParams{}, test_params)
     #   |> to_form(as: :test)
     #   |> Map.put(:action, :validate)
 
     # With Doumi.Phoenix.Params
-    form =
+    test_params =
       socket.assigns.form
       |> Params.to_params(%{"foo" => foo})
-      |> Params.to_form(TestParams, as: :test)
+
+    form = Params.to_form(%TestParams{}, test_params, as: :test)
 
     socket = socket |> assign(:form, form)
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("save", %{"test" => test_params}, socket) do
+    # Without Doumi.Phoenix.Params
+    # test_params_map =
+    #   TestParams.changeset(%TestParams, test_params)
+    #   |> Ecto.Changeset.apply_changes()
+    #   |> some_how_change_nested_struct_to_map_if_you_use_map_with_atom_key()
+
+    # With Doumi.Phoenix.Params
+    test_params_map =
+      Params.to_form(%TestParams{}, test_params)
+      |> Params.to_map()
+
+    :ok = TestDomain.create_test(test_params_map)
+
+    {:noreplym, socket}
   end
 
   ...
