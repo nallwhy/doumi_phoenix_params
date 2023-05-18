@@ -16,6 +16,7 @@
 ```elixir
 defmodule MyAppWeb.TestParams do
   use Ecto.Schema
+  use Doumi.Phoenix.Params, as: :test
   import Ecto.Changeset
 
   @primary_key false
@@ -46,7 +47,7 @@ defmodule MyAppWeb.MyLive do
     #   |> to_form(as: :test)
 
     # With Doumi.Phoenix.Params
-    form = Params.to_form(%TestParams{}, %{}, as: :test, validate: false)
+    form = TestParams.to_form(%{}, validate: false)
 
     socket = socket |> assign(:form, form)
 
@@ -62,7 +63,7 @@ defmodule MyAppWeb.MyLive do
     #   |> Map.put(:action, :validate)
 
     # With Doumi.Phoenix.Params
-    form = Params.to_form(%TestParams{}, test_params, as: :test)
+    form = TestParams.to_form(test_params)
 
     socket = socket |> assign(:form, form)
 
@@ -86,7 +87,7 @@ defmodule MyAppWeb.MyLive do
       socket.assigns.form
       |> Params.to_params(%{"foo" => foo})
 
-    form = Params.to_form(%TestParams{}, test_params, as: :test)
+    form = TestParams.to_form(test_params)
 
     socket = socket |> assign(:form, form)
 
@@ -103,7 +104,8 @@ defmodule MyAppWeb.MyLive do
 
     # With Doumi.Phoenix.Params
     test_params_map =
-      Params.to_form(%TestParams{}, test_params)
+      test_params
+      |> Params.to_form()
       |> Params.to_map()
 
     :ok = TestDomain.create_test(test_params_map)
