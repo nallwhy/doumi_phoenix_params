@@ -129,7 +129,7 @@ The package can be installed by adding `doumi_phoenix_params` to your list of de
 ```elixir
 def deps do
   [
-    {:doumi_phoenix_params, "~> 0.2.0"}
+    {:doumi_phoenix_params, "~> 0.3.0"}
   ]
 end
 ```
