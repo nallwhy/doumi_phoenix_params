@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.1 (2023-05-19)
+
+- Fixed failure to support `embeds_many/3`
+
 ## v0.3.0 (2023-05-18)
 
 ### Enhancements
