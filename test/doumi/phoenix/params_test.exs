@@ -11,7 +11,7 @@ defmodule Doumi.Phoenix.ParamsTest do
     embedded_schema do
       field :foo, :string
 
-      embeds_one :embedded, Embedded, primary_key: false do
+      embeds_many :embeddeds, Embedded, primary_key: false do
         field :bar, :string
       end
     end
@@ -20,7 +20,7 @@ defmodule Doumi.Phoenix.ParamsTest do
       struct
       |> cast(params, [:foo])
       |> validate_required([:foo])
-      |> cast_embed(:embedded, required: true, with: &changeset_embedded/2)
+      |> cast_embed(:embeddeds, required: true, with: &changeset_embedded/2)
     end
 
     def another_changeset(%__MODULE__{} = struct \\ %__MODULE__{}, params) do
@@ -44,23 +44,23 @@ defmodule Doumi.Phoenix.ParamsTest do
 
   describe "to_params/2" do
     setup do
-      %{changeset: Test.changeset(%{foo: "foo", embedded: %{bar: "bar"}})}
+      %{changeset: Test.changeset(%{foo: "foo", embeddeds: [%{bar: "bar"}]})}
     end
 
     test "returns params from changeset", %{changeset: changeset} do
-      assert Params.to_params(changeset) == %{"foo" => "foo", "embedded" => %{"bar" => "bar"}}
+      assert Params.to_params(changeset) == %{"foo" => "foo", "embeddeds" => [%{"bar" => "bar"}]}
     end
 
     test "returns params from form", %{changeset: changeset} do
       form = changeset |> Phoenix.Component.to_form()
 
-      assert Params.to_params(form) == %{"foo" => "foo", "embedded" => %{"bar" => "bar"}}
+      assert Params.to_params(form) == %{"foo" => "foo", "embeddeds" => [%{"bar" => "bar"}]}
     end
 
     test "returns params merged with more_params", %{changeset: changeset} do
       assert Params.to_params(changeset, %{"baz" => "baz"}) == %{
                "foo" => "foo",
-               "embedded" => %{"bar" => "bar"},
+               "embeddeds" => [%{"bar" => "bar"}],
                "baz" => "baz"
              }
     end
@@ -68,7 +68,7 @@ defmodule Doumi.Phoenix.ParamsTest do
 
   describe "to_form/3" do
     setup do
-      %{params: %{"foo" => "foo", "embedded" => %{"bar" => "bar"}}}
+      %{params: %{"foo" => "foo", "embeddeds" => [%{"bar" => "bar"}]}}
     end
 
     test "returns form from struct and params", %{params: params} do
@@ -76,7 +76,10 @@ defmodule Doumi.Phoenix.ParamsTest do
                Params.to_form(%Test{}, params)
 
       assert changeset.action == :validate
-      assert %{foo: "foo", embedded: %Ecto.Changeset{} = embedded_changeset} = changeset.changes
+
+      assert %{foo: "foo", embeddeds: [%Ecto.Changeset{} = embedded_changeset]} =
+               changeset.changes
+
       assert %{bar: "bar"} = embedded_changeset.changes
     end
 
@@ -93,30 +96,33 @@ defmodule Doumi.Phoenix.ParamsTest do
                Params.to_form(%Test{}, params, validate: false)
 
       assert changeset.action == nil
-      assert %{foo: "foo", embedded: %Ecto.Changeset{} = embedded_changeset} = changeset.changes
+
+      assert %{foo: "foo", embeddeds: [%Ecto.Changeset{} = embedded_changeset]} =
+               changeset.changes
+
       assert %{bar: "bar"} = embedded_changeset.changes
     end
   end
 
   describe "to_map/1" do
     setup do
-      %{changeset: Test.changeset(%{foo: "foo", embedded: %{bar: "bar"}})}
+      %{changeset: Test.changeset(%{foo: "foo", embeddeds: [%{bar: "bar"}]})}
     end
 
     test "returns map from changeset", %{changeset: changeset} do
-      assert Params.to_map(changeset) == %{foo: "foo", embedded: %{bar: "bar"}}
+      assert Params.to_map(changeset) == %{foo: "foo", embeddeds: [%{bar: "bar"}]}
     end
 
     test "returns map from form", %{changeset: changeset} do
       form = changeset |> Phoenix.Component.to_form()
 
-      assert Params.to_map(form) == %{foo: "foo", embedded: %{bar: "bar"}}
+      assert Params.to_map(form) == %{foo: "foo", embeddeds: [%{bar: "bar"}]}
     end
   end
 
   describe "to_form/2 from macro" do
     setup do
-      %{params: %{"foo" => "foo", "embedded" => %{"bar" => "bar"}}}
+      %{params: %{"foo" => "foo", "embeddeds" => [%{"bar" => "bar"}]}}
     end
 
     test "returns form from params", %{params: params} do
@@ -126,7 +132,10 @@ defmodule Doumi.Phoenix.ParamsTest do
       assert id == "new_name"
       assert name == "new_name"
       assert changeset.action == :validate
-      assert %{foo: "foo", embedded: %Ecto.Changeset{} = embedded_changeset} = changeset.changes
+
+      assert %{foo: "foo", embeddeds: [%Ecto.Changeset{} = embedded_changeset]} =
+               changeset.changes
+
       assert %{bar: "bar"} = embedded_changeset.changes
     end
 
