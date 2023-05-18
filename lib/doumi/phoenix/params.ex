@@ -9,6 +9,12 @@ defmodule Doumi.Phoenix.Params do
     end
   end
 
+  @spec to_form(
+          struct :: %{:__struct__ => atom(), optional(binary()) => any()},
+          params :: map(),
+          opts :: keyword()
+        ) ::
+          form :: Phoenix.HTML.Form.t()
   def to_form(%module{} = struct, params, opts \\ []) when is_struct(struct) and is_map(params) do
     {validate, opts} = opts |> Keyword.pop(:validate, true)
     {changeset_fun, opts} = opts |> Keyword.pop(:with, &module.changeset/2)
@@ -19,6 +25,11 @@ defmodule Doumi.Phoenix.Params do
     |> Phoenix.Component.to_form(opts)
   end
 
+  @spec to_params(
+          form_or_changeset :: Phoenix.HTML.Form.t() | Ecto.Changeset.t(),
+          more_params :: map()
+        ) ::
+          params :: map()
   def to_params(form_or_changeset, more_params \\ %{})
 
   def to_params(%Phoenix.HTML.Form{source: %Ecto.Changeset{} = changeset}, more_params) do
@@ -31,6 +42,8 @@ defmodule Doumi.Phoenix.Params do
     |> Map.merge(more_params)
   end
 
+  @spec to_map(form_or_changeset :: Phoenix.HTML.Form.t() | Ecto.Changeset.t()) ::
+          map :: map()
   def to_map(%Phoenix.HTML.Form{source: %Ecto.Changeset{} = changeset}) do
     to_map(changeset)
   end
