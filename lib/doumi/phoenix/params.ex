@@ -1,4 +1,14 @@
 defmodule Doumi.Phoenix.Params do
+  defmacro __using__(opts) do
+    quote do
+      def to_form(params, opts \\ []) do
+        opts = unquote(opts) |> Keyword.merge(opts)
+
+        unquote(__MODULE__).to_form(struct(__MODULE__), params, opts)
+      end
+    end
+  end
+
   def to_params(form_or_changeset, more_params \\ %{})
 
   def to_params(%Phoenix.HTML.Form{source: %Ecto.Changeset{} = changeset}, more_params) do

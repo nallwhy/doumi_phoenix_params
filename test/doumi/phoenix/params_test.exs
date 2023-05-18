@@ -4,6 +4,7 @@ defmodule Doumi.Phoenix.ParamsTest do
 
   defmodule Test do
     use Ecto.Schema
+    use Doumi.Phoenix.Params, as: :new_name
     import Ecto.Changeset
 
     @primary_key false
@@ -110,6 +111,30 @@ defmodule Doumi.Phoenix.ParamsTest do
       form = changeset |> Phoenix.Component.to_form()
 
       assert Params.to_map(form) == %{foo: "foo", embedded: %{bar: "bar"}}
+    end
+  end
+
+  describe "to_form/2 from macro" do
+    setup do
+      %{params: %{"foo" => "foo", "embedded" => %{"bar" => "bar"}}}
+    end
+
+    test "returns form from params", %{params: params} do
+      assert %Phoenix.HTML.Form{id: id, name: name, source: %Ecto.Changeset{} = changeset} =
+               Test.to_form(params)
+
+      assert id == "new_name"
+      assert name == "new_name"
+      assert changeset.action == :validate
+      assert %{foo: "foo", embedded: %Ecto.Changeset{} = embedded_changeset} = changeset.changes
+      assert %{bar: "bar"} = embedded_changeset.changes
+    end
+
+    test "with opts", %{params: params} do
+      assert %Phoenix.HTML.Form{id: id, name: name} = Test.to_form(params, as: :override_name)
+
+      assert id == "override_name"
+      assert name == "override_name"
     end
   end
 end
