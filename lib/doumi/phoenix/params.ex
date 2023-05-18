@@ -9,6 +9,9 @@ defmodule Doumi.Phoenix.Params do
     end
   end
 
+  @doc """
+  Converts params to form.
+  """
   @spec to_form(
           struct :: %{:__struct__ => atom(), optional(binary()) => any()},
           params :: map(),
@@ -25,6 +28,9 @@ defmodule Doumi.Phoenix.Params do
     |> Phoenix.Component.to_form(opts)
   end
 
+  @doc """
+  Converts form or changeset to params(map with string keys).
+  """
   @spec to_params(
           form_or_changeset :: Phoenix.HTML.Form.t() | Ecto.Changeset.t(),
           more_params :: map()
@@ -42,6 +48,9 @@ defmodule Doumi.Phoenix.Params do
     |> Map.merge(more_params)
   end
 
+  @doc """
+  Converts form or changeset to map(map with atom keys).
+  """
   @spec to_map(form_or_changeset :: Phoenix.HTML.Form.t() | Ecto.Changeset.t()) ::
           map :: map()
   def to_map(%Phoenix.HTML.Form{source: %Ecto.Changeset{} = changeset}) do
