@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.2 (2023-05-20)
+
+- Fix handling not casted embeded fields
+
 ## v0.3.1 (2023-05-19)
 
 - Fixed failure to support `embeds_many/3`
