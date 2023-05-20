@@ -87,6 +87,10 @@ defmodule Doumi.Phoenix.Params do
     list |> Enum.map(&struct_to_map/1)
   end
 
+  defp struct_to_map(value) do
+    value
+  end
+
   defp keys_to_string(%{} = atom_key_map) do
     atom_key_map
     |> Enum.map(fn {key, value} ->
