@@ -72,7 +72,7 @@ defmodule Doumi.Phoenix.Params do
     changeset
   end
 
-  defp struct_to_map(%module{} = struct) when is_struct(struct) do
+  def struct_to_map(%module{} = struct) when is_struct(struct) do
     embeds = module.__schema__(:embeds)
 
     map = struct |> Map.from_struct()
@@ -83,11 +83,11 @@ defmodule Doumi.Phoenix.Params do
     end)
   end
 
-  defp struct_to_map(list) when is_list(list) do
+  def struct_to_map(list) when is_list(list) do
     list |> Enum.map(&struct_to_map/1)
   end
 
-  defp struct_to_map(value) do
+  def struct_to_map(value) do
     value
   end
 
