@@ -12,11 +12,7 @@ defmodule Doumi.Phoenix.Params do
   @doc """
   Converts params to form.
   """
-  @spec to_form(
-          struct :: %{:__struct__ => atom(), optional(binary()) => any()},
-          params :: map(),
-          opts :: keyword()
-        ) ::
+  @spec to_form(struct :: struct(), params :: map(), opts :: keyword()) ::
           form :: Phoenix.HTML.Form.t()
   def to_form(%module{} = struct, params, opts \\ []) when is_struct(struct) and is_map(params) do
     {validate, opts} = opts |> Keyword.pop(:validate, true)
