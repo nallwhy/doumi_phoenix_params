@@ -2,7 +2,7 @@ defmodule Doumi.Phoenix.Params.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/nallwhy/doumi_phoenix_params"
-  @version "0.3.4"
+  @version "0.3.5"
 
   def project do
     [
