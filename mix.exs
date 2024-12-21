@@ -25,8 +25,8 @@ defmodule Doumi.Phoenix.Params.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:phoenix_live_view, ">= 0.18.12"},
-      {:phoenix_ecto, ">= 4.0.0"},
+      {:phoenix_live_view, ">= 0.18.12 or ~> 1.0"},
+      {:phoenix_ecto, "~> 4.0"},
       {:ex_doc, "~> 0.29", only: :docs}
     ]
   end
